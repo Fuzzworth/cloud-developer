@@ -42,16 +42,24 @@ import path from 'path'
 
   app.get( "/filteredimage", async ( req, res ) => {
 
-    const image_url = req.query.image_url;
+    var image_url:string = req.query.image_url;
 
     try {
-      const myURL = new URL(image_url);
+      var myURL:URL = new URL(image_url);
 
-      const filteredpath = await filterImageFromURL(myURL.href);
+      
+
+    } catch (error) {
+      console.log(`${Date().toString()}: ${image_url} is not a valid url`);
+      return res.status(400).send(`${image_url} is not a valid url`);
+    }
+
+    try {
+      var filteredpath:string = await filterImageFromURL(myURL.href);
     
       res.sendFile(filteredpath);
 
-      const upload_dir = path.dirname(filteredpath);
+      var upload_dir:string = path.dirname(filteredpath);
   
       readdir(upload_dir, (err, files) => {
         files.forEach(file => {
@@ -61,8 +69,8 @@ import path from 'path'
       });
 
     } catch (error) {
-      console.log(`${Date().toString()}: ${image_url} is not a valid url`);
-      return res.status(400).send(`${image_url} is not a valid url`);
+      console.log(`${Date().toString()}: ${error} `);
+      return res.status(400).send(`${error}`);
     }
 
   } );
