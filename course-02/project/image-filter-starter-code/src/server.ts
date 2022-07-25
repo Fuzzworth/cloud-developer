@@ -1,6 +1,9 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import { URL } from 'url';
+import { readdir } from 'fs';
+import path from 'path'
 
 (async () => {
 
@@ -34,7 +37,34 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   // Root Endpoint
   // Displays a simple message to the user
   app.get( "/", async ( req, res ) => {
-    res.send("try GET /filteredimage?image_url={{}}")
+    res.send("try GET /filteredimage?image_url={{}}");
+  } );
+
+  app.get( "/filteredimage", async ( req, res ) => {
+
+    const image_url = req.query.image_url;
+
+    try {
+      const myURL = new URL(image_url);
+
+      const filteredpath = await filterImageFromURL(myURL.href);
+    
+      res.sendFile(filteredpath);
+
+      const upload_dir = path.dirname(filteredpath);
+  
+      readdir(upload_dir, (err, files) => {
+        files.forEach(file => {
+          console.log(path.resolve(upload_dir,file));
+          deleteLocalFiles([path.resolve(upload_dir,file)]);
+        });
+      });
+
+    } catch (error) {
+      console.log(`${Date().toString()}: ${image_url} is not a valid url`);
+      return res.status(400).send(`${image_url} is not a valid url`);
+    }
+
   } );
   
 
